@@ -2,6 +2,7 @@ import os
 import re
 from warnings import filterwarnings
 from collections import defaultdict
+from sys import argv, exit
 
 filterwarnings("ignore", category=FutureWarning)
 
@@ -30,22 +31,45 @@ def check_word_against_regex(word, regex_patterns):
             triggered_patterns.append(pattern)
     return triggered_patterns
 
+def get_folder_path():
+    folder_path = None
+
+    if len(argv) > 2:
+        print("Usage: python matcher.py folder_path")
+        print("Please provide the folder path containing the .txt files or")
+        return None
+    elif len(argv) < 2:
+        folder_path = "."
+    else:
+        folder_path = argv[1]
+
+    if not os.path.isdir(folder_path):
+        print("Invalid folder path.")
+        print("Please provide a valid folder path containing the .txt files.")
+        return None
+
+    return folder_path
+
 
 def main():
-    print("Enter the folder path containing the .txt files. Type . to check files in current folder")
-    folder_path = input("input: ")
+
+    folder_path = get_folder_path()
+    if not folder_path:
+        exit(1)
+
     regex_patterns, file_regex_map = extract_regex_from_files(folder_path)
 
     while True:
-        print("Enter a word to check against the regex patterns. Type 'exit' to exit")
-        word = input("input: ")
+        print("Enter a word to check against the regex patterns. Type 'exit' to exit.")
+        word = input("Input: ")
+
         if word == 'exit':
             break
-            
+
         triggered_patterns = check_word_against_regex(word, regex_patterns)
 
         if triggered_patterns:
-            print(f"The word '{word}' triggers {len(triggered_patterns)} patterns")
+            print(f"The word '{word}' triggers {len(triggered_patterns)} pattern(s)")
             print(f"{'Regex Pattern'.ljust(50)}{'Files Found'.ljust(30)}")
             for pattern in triggered_patterns:
                 files_found = ', '.join(file_regex_map[pattern])
@@ -53,6 +77,7 @@ def main():
         else:
             print(f"The word '{word}' does not trigger any of the regex patterns.")
         print()
+
 
 if __name__ == "__main__":
     main()
